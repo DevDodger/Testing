@@ -2,34 +2,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soon</title>
+    <title>Server Status</title>
 </head>
 <body>
     <h1>Server Status:</h1>
-<div id="mc-status" style="font-family: Arial; background:#222; color:white; padding:10px; border-radius:8px; width:250px;">
-  Checking server status...
+<div id="mc-status-card" class="mc-card">
+  <div class="mc-dot" id="mc-dot"></div>
+  <div>
+    <h3 id="mc-title">play.example.com</h3>
+    <p id="mc-status-text">Checking...</p>
+    <p id="mc-players" style="display:none;"></p>
+  </div>
 </div>
 
+<style>
+  .mc-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #1e1e1e;
+    color: #fff;
+    font-family: "Segoe UI", sans-serif;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0,0,0,0.4);
+    width: fit-content;
+    transition: background 0.3s ease;
+  }
+  .mc-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: gray;
+    box-shadow: 0 0 10px rgba(255,255,255,0.2);
+  }
+  .mc-online {
+    background: #4CAF50 !important;
+    box-shadow: 0 0 10px #4CAF50;
+  }
+  .mc-offline {
+    background: #F44336 !important;
+    box-shadow: 0 0 10px #F44336;
+  }
+  h3 { margin: 0; font-size: 1.1em; }
+  p { margin: 2px 0; font-size: 0.9em; color: #ccc; }
+</style>
+
 <script>
-  const server = "devdodger.tech"; // your IP or domain
+  const ip = "devdodger.tech"; // 👈 change this to your server
+  const card = document.getElementById("mc-status-card");
+  const dot = document.getElementById("mc-dot");
+  const text = document.getElementById("mc-status-text");
+  const players = document.getElementById("mc-players");
+  const title = document.getElementById("mc-title");
+  title.textContent = ip;
 
   async function updateStatus() {
-    const res = await fetch(`https://api.mcsrvstat.us/2/${server}`);
-    const data = await res.json();
-    const div = document.getElementById("mc-status");
-
-    if (data.online) {
-      div.innerHTML = `🟢 <b>${server}</b> is Online<br>
-      Players: ${data.players.online}/${data.players.max}`;
-    } else {
-      div.innerHTML = `🔴 <b>${server}</b> is Offline`;
+    try {
+      const res = await fetch(`https://api.mcsrvstat.us/2/${ip}`);
+      const data = await res.json();
+      if (data.online) {
+        dot.classList.remove("mc-offline");
+        dot.classList.add("mc-online");
+        text.textContent = "🟢 Online";
+        players.style.display = "block";
+        players.textContent = `Players: ${data.players.online}/${data.players.max}`;
+      } else {
+        dot.classList.remove("mc-online");
+        dot.classList.add("mc-offline");
+        text.textContent = "🔴 Offline";
+        players.style.display = "none";
+      }
+    } catch (e) {
+      dot.classList.remove("mc-online");
+      dot.classList.add("mc-offline");
+      text.textContent = "⚠️ Error fetching status";
+      players.style.display = "none";
     }
   }
 
   updateStatus();
-  setInterval(updateStatus, 30000);
-</script>
-</div>
+  setInterval(updateStatus, 30000); // refresh every 30s
 </script>
 </body>
 </html>
