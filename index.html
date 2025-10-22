@@ -6,8 +6,30 @@
 </head>
 <body>
     <h1>Server Status:</h1>
-    <iframe src="https://mcstatus.io/status/java/devdodger.tech" 
-        width="300" height="100" frameborder="0"></iframe>
+<div id="mc-status" style="font-family: Arial; background:#222; color:white; padding:10px; border-radius:8px; width:250px;">
+  Checking server status...
+</div>
+
+<script>
+  const server = "devdodger.tech"; // your IP or domain
+
+  async function updateStatus() {
+    const res = await fetch(`https://api.mcsrvstat.us/2/${server}`);
+    const data = await res.json();
+    const div = document.getElementById("mc-status");
+
+    if (data.online) {
+      div.innerHTML = `🟢 <b>${server}</b> is Online<br>
+      Players: ${data.players.online}/${data.players.max}`;
+    } else {
+      div.innerHTML = `🔴 <b>${server}</b> is Offline`;
+    }
+  }
+
+  updateStatus();
+  setInterval(updateStatus, 30000);
+</script>
+</div>
 </script>
 </body>
 </html>
