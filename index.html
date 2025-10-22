@@ -1,5 +1,12 @@
 <html lang="en">
 <head>
+<meta property="og:title" content="DevDodger Minecraft Server" />
+<meta property="og:description" content="Check the live status of our Minecraft server — see if we're online and how many players are in!" />
+<meta property="og:url" content="https://devdodger.tech/status" />
+<meta property="og:image" content="https://cms-assets.xboxservices.com/assets/22/3a/223a1521-60cf-4a82-b708-c5f2fdfcf163.jpg?n=Minecraft-Vanilla_Sneaky-Slider-1084_Spring-to-Life_1600x675.jpg" />
+<meta property="og:type" content="website" />
+<link rel="icon" type="image/x-icon" href="assets/img/1552191.png">
+<link rel="icon" type="image/x-icon" href="https://brandlogos.net/wp-content/uploads/2022/07/minecraft-logo_brandlogos.net_faqdi-512x560.png">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Server Status</title>
@@ -26,20 +33,26 @@
 
   .mc-card {
     display: flex;
-    align-items: center;
-    gap: 16px;
+    flex-direction: column;
+    gap: 12px;
     background: linear-gradient(145deg, #1b1b1b, #222);
     color: #fff;
     padding: 20px 25px;
     border-radius: 14px;
     box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
-    width: 300px;
+    width: 340px;
     transition: transform 0.2s ease, box-shadow 0.3s ease;
   }
 
   .mc-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 0 30px var(--hover-glow, #00e67655);
+  }
+
+  .mc-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
   }
 
   .mc-dot {
@@ -70,13 +83,27 @@
   .mc-info h3 {
     margin: 0;
     font-size: 1.2em;
-    color: #fff;
   }
 
   .mc-info p {
-    margin: 3px 0;
+    margin: 2px 0;
     font-size: 0.9em;
     color: #bbb;
+  }
+
+  .mc-stats {
+    font-size: 0.85em;
+    color: #ccc;
+    border-top: 1px solid #444;
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .mc-stats p span {
+    font-weight: bold;
+    color: #fff;
   }
 
   footer {
@@ -88,28 +115,47 @@
 </style>
 </head>
 <body>
+
 <h1>Server Status</h1>
 
 <div id="mc-status-card" class="mc-card">
-  <div class="mc-dot" id="mc-dot"></div>
-  <div class="mc-info">
-    <h3 id="mc-title">devdodger.tech</h3>
-    <p id="mc-status-text">Checking...</p>
-    <p id="mc-players" style="display:none;"></p>
+  <div class="mc-header">
+    <div class="mc-dot" id="mc-dot"></div>
+    <div class="mc-info">
+      <h3 id="mc-title">devdodger.tech</h3>
+      <p id="mc-status-text">Checking...</p>
+      <p id="mc-players" style="display:none;"></p>
+    </div>
+  </div>
+  <div class="mc-stats" id="mc-stats" style="display:none;">
+    <p id="mc-ping">Ping: <span>...</span></p>
+    <p id="mc-version">Version: <span>...</span></p>
+    <p id="mc-motd">MOTD: <span>...</span></p>
+    <p id="mc-tps">TPS: <span>...</span></p>
+    <p id="mc-uptime">Uptime: <span>...</span></p>
+    <p id="mc-last-updated">Last updated: <span>just now</span></p>
   </div>
 </div>
 
-<footer>Last updated every 30 seconds</footer>
+<footer>Powered by mcstatus.io</footer>
 
 <script>
 const ip = "devdodger.tech";
 const dot = document.getElementById("mc-dot");
 const text = document.getElementById("mc-status-text");
 const players = document.getElementById("mc-players");
+const statsDiv = document.getElementById("mc-stats");
 const title = document.getElementById("mc-title");
 const card = document.getElementById("mc-status-card");
 
-title.textContent = ip;
+const pingEl = document.getElementById("mc-ping").querySelector("span");
+const versionEl = document.getElementById("mc-version").querySelector("span");
+const motdEl = document.getElementById("mc-motd").querySelector("span");
+const tpsEl = document.getElementById("mc-tps").querySelector("span");
+const uptimeEl = document.getElementById("mc-uptime").querySelector("span");
+const lastUpdatedEl = document.getElementById("mc-last-updated").querySelector("span");
+
+let lastUpdated = new Date();
 
 async function updateStatus() {
   try {
@@ -122,27 +168,52 @@ async function updateStatus() {
       text.textContent = "🟢 Online";
       players.style.display = "block";
       players.textContent = `Players: ${data.players.online}/${data.players.max}`;
-      // Set hover glow for online
       card.style.setProperty('--hover-glow', '#00e67655');
+
+      // Show stats
+      statsDiv.style.display = "flex";
+      pingEl.textContent = data.latency + " ms";
+      versionEl.textContent = data.version.name_clean || "N/A";
+      motdEl.textContent = data.motd.clean.join(' ') || "N/A";
+      tpsEl.textContent = data.tps || "N/A";
+      uptimeEl.textContent = data.uptime || "N/A";
+
     } else {
       dot.classList.remove("mc-online");
       dot.classList.add("mc-offline");
       text.textContent = "🔴 Offline";
       players.style.display = "none";
-      // Set hover glow for offline
+      statsDiv.style.display = "none";
       card.style.setProperty('--hover-glow', '#ff174455');
     }
+
+    lastUpdated = new Date(); // store timestamp for ticking timer
+    updateLastUpdated();
   } catch (e) {
     dot.classList.remove("mc-online");
     dot.classList.add("mc-offline");
     text.textContent = "⚠️ Error fetching status";
     players.style.display = "none";
+    statsDiv.style.display = "none";
     card.style.setProperty('--hover-glow', '#ff174455');
   }
 }
 
+function updateLastUpdated() {
+  const now = new Date();
+  const diff = Math.floor((now - lastUpdated) / 1000);
+  let text = '';
+  if (diff < 60) text = `${diff} sec ago`;
+  else if (diff < 3600) text = `${Math.floor(diff/60)} min ago`;
+  else text = `${Math.floor(diff/3600)}h ${Math.floor((diff%3600)/60)}m ago`;
+  lastUpdatedEl.textContent = text;
+}
+
+// Refresh every 30s
 updateStatus();
 setInterval(updateStatus, 30000);
+setInterval(updateLastUpdated, 1000); // update the ticking timer every second
 </script>
+
 </body>
 </html>
