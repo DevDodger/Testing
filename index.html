@@ -106,11 +106,11 @@
     color: #fff;
   }
 
-  footer {
-    position: absolute;
-    bottom: 15px;
+  .mc-footer {
     font-size: 0.8em;
-    color: #666;
+    color: #ccc;
+    margin-top: 6px;
+    text-align: right;
   }
 </style>
 </head>
@@ -131,13 +131,11 @@
     <p id="mc-ping">Ping: <span>...</span></p>
     <p id="mc-version">Version: <span>...</span></p>
     <p id="mc-motd">MOTD: <span>...</span></p>
-    <p id="mc-tps">TPS: <span>...</span></p>
-    <p id="mc-uptime">Uptime: <span>...</span></p>
-    <p id="mc-last-updated">Last updated: <span>just now</span></p>
+  </div>
+  <div class="mc-footer">
+    Last updated: <span id="mc-last-updated">just now</span>
   </div>
 </div>
-
-<footer>Powered by mcstatus.io</footer>
 
 <script>
 const ip = "devdodger.tech";
@@ -151,15 +149,13 @@ const card = document.getElementById("mc-status-card");
 const pingEl = document.getElementById("mc-ping").querySelector("span");
 const versionEl = document.getElementById("mc-version").querySelector("span");
 const motdEl = document.getElementById("mc-motd").querySelector("span");
-const tpsEl = document.getElementById("mc-tps").querySelector("span");
-const uptimeEl = document.getElementById("mc-uptime").querySelector("span");
-const lastUpdatedEl = document.getElementById("mc-last-updated").querySelector("span");
+const lastUpdatedEl = document.getElementById("mc-last-updated");
 
 let lastUpdated = new Date();
 
 async function updateStatus() {
   try {
-    const res = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
+    const res = await fetch(`https://api.mcsrvstat.us/2/${ip}`);
     const data = await res.json();
 
     if (data.online) {
@@ -167,17 +163,14 @@ async function updateStatus() {
       dot.classList.add("mc-online");
       text.textContent = "🟢 Online";
       players.style.display = "block";
-      players.textContent = `Players: ${data.players.online}/${data.players.max}`;
+      players.textContent = `Players: ${data.players.online}/${data.players.max || '?'}`;
       card.style.setProperty('--hover-glow', '#00e67655');
 
       // Show stats
       statsDiv.style.display = "flex";
-      pingEl.textContent = data.latency + " ms";
-      versionEl.textContent = data.version.name_clean || "N/A";
-      motdEl.textContent = data.motd.clean.join(' ') || "N/A";
-      tpsEl.textContent = data.tps || "N/A";
-      uptimeEl.textContent = data.uptime || "N/A";
-
+      pingEl.textContent = data.debug?.ping || "N/A";
+      versionEl.textContent = data.version || "N/A";
+      motdEl.textContent = data.motd?.clean?.join(' ') || "N/A";
     } else {
       dot.classList.remove("mc-online");
       dot.classList.add("mc-offline");
@@ -187,7 +180,7 @@ async function updateStatus() {
       card.style.setProperty('--hover-glow', '#ff174455');
     }
 
-    lastUpdated = new Date(); // store timestamp for ticking timer
+    lastUpdated = new Date();
     updateLastUpdated();
   } catch (e) {
     dot.classList.remove("mc-online");
@@ -209,10 +202,9 @@ function updateLastUpdated() {
   lastUpdatedEl.textContent = text;
 }
 
-// Refresh every 30s
 updateStatus();
 setInterval(updateStatus, 30000);
-setInterval(updateLastUpdated, 1000); // update the ticking timer every second
+setInterval(updateLastUpdated, 1000);
 </script>
 
 </body>
