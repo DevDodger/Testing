@@ -6,34 +6,8 @@
 </head>
 <body>
     <h1>Server Status:</h1>
-    <h2>Running</h2>
-
-    <div id="server-status" style="font-family: Arial; padding: 10px;">
-  Checking server status...
-</div>
-
-<script>
-  const serverIP = "devdodger.tech";  // e.g. "play.example.com"
-  const serverPort = 25565;
-
-  async function checkServer() {
-    try {
-      const res = await fetch(`https://api.mcsrvstat.us/2/${serverIP}:${serverPort}`);
-      const data = await res.json();
-
-      const statusDiv = document.getElementById("server-status");
-      if (data.online) {
-        statusDiv.innerHTML = `🟢 Server is <b>Online</b> with ${data.players.online}/${data.players.max} players.`;
-      } else {
-        statusDiv.innerHTML = "🔴 Server is <b>Offline</b>.";
-      }
-    } catch (err) {
-      document.getElementById("server-status").innerHTML = "⚠️ Unable to fetch server status.";
-    }
-  }
-
-  checkServer();
-  setInterval(checkServer, 30000); // refresh every 30s
+    <iframe src="https://mcstatus.io/status/java/devdodger.tech" 
+        width="300" height="100" frameborder="0"></iframe>
 </script>
 </body>
 </html>
