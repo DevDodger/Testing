@@ -1,150 +1,148 @@
 <html lang="en">
-<meta property="og:title" content="DevDodger Minecraft Server" />
-<meta property="og:description" content="Check the live status of our Minecraft server — see if we're online and how many players are in!" />
-<meta property="og:url" content="https://devdodger.tech/status" />
-<meta property="og:image" content="https://cms-assets.xboxservices.com/assets/22/3a/223a1521-60cf-4a82-b708-c5f2fdfcf163.jpg?n=Minecraft-Vanilla_Sneaky-Slider-1084_Spring-to-Life_1600x675.jpg" />
-<meta property="og:type" content="website" />
-   <link rel="icon" type="image/x-icon" href="assets/img/1552191.png">
-<link rel="icon" type="image/x-icon" href="https://brandlogos.net/wp-content/uploads/2022/07/minecraft-logo_brandlogos.net_faqdi-512x560.png">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Server Status</title>
-  <style>
-    body {
-      background: radial-gradient(circle at top left, #111 0%, #000 100%);
-      color: #fff;
-      font-family: "Segoe UI", sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    h1 {
-      font-size: 2em;
-      margin-bottom: 20px;
-      color: #00e676;
-      letter-spacing: 1px;
-      text-shadow: 0 0 10px #00e67650;
-    }
-
-    .mc-card {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      background: linear-gradient(145deg, #1b1b1b, #222);
-      color: #fff;
-      padding: 20px 25px;
-      border-radius: 14px;
-      box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
-      width: 300px;
-      transition: transform 0.2s ease, box-shadow 0.3s ease;
-    }
-
-    .mc-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 0 30px rgba(0, 255, 128, 0.3);
-    }
-
-    .mc-dot {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: gray;
-      box-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
-      animation: pulse 2s infinite ease-in-out;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 0.8; }
-      50% { transform: scale(1.2); opacity: 1; }
-      100% { transform: scale(1); opacity: 0.8; }
-    }
-
-    .mc-online {
-      background: #00e676 !important;
-      box-shadow: 0 0 10px #00e676, 0 0 30px #00e67655;
-    }
-
-    .mc-offline {
-      background: #ff1744 !important;
-      box-shadow: 0 0 10px #ff1744, 0 0 30px #ff174455;
-    }
-
-    .mc-info h3 {
-      margin: 0;
-      font-size: 1.2em;
-      color: #fff;
-    }
-
-    .mc-info p {
-      margin: 3px 0;
-      font-size: 0.9em;
-      color: #bbb;
-    }
-
-    footer {
-      position: absolute;
-      bottom: 15px;
-      font-size: 0.8em;
-      color: #666;
-    }
-  </style>
-</head>
-<body>
-  <h1>Server Status</h1>
-
-  <div id="mc-status-card" class="mc-card">
-    <div class="mc-dot" id="mc-dot"></div>
-    <div class="mc-info">
-      <h3 id="mc-title">devdodger.tech</h3>
-      <p id="mc-status-text">Checking...</p>
-      <p id="mc-players" style="display:none;"></p>
-    </div>
-  </div>
-
-  <footer>Last updated every 30 seconds</footer>
-
-  <script>
-  const ip = "devdodger.tech"; // 👈 your server address
-  const dot = document.getElementById("mc-dot");
-  const text = document.getElementById("mc-status-text");
-  const players = document.getElementById("mc-players");
-  const title = document.getElementById("mc-title");
-  title.textContent = ip;
-
-  async function updateStatus() {
-    try {
-      // Use mcstatus.io (real-time, no caching)
-      const res = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
-      const data = await res.json();
-
-      if (data.online) {
-        dot.classList.remove("mc-offline");
-        dot.classList.add("mc-online");
-        text.textContent = "🟢 Online";
-        players.style.display = "block";
-        players.textContent = `Players: ${data.players.online}/${data.players.max}`;
-      } else {
-        dot.classList.remove("mc-online");
-        dot.classList.add("mc-offline");
-        text.textContent = "🔴 Offline";
-        players.style.display = "none";
-      }
-    } catch (e) {
-      dot.classList.remove("mc-online");
-      dot.classList.add("mc-offline");
-      text.textContent = "⚠️ Error fetching status";
-      players.style.display = "none";
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Server Status</title>
+<style>
+  body {
+    background: radial-gradient(circle at top left, #111 0%, #000 100%);
+    color: #fff;
+    font-family: "Segoe UI", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
   }
 
-  updateStatus();
-  // Check every 30 seconds (you can lower to 10s if you want)
-  setInterval(updateStatus, 10000);
+  h1 {
+    font-size: 2em;
+    margin-bottom: 20px;
+    color: #00e676;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px #00e67650;
+  }
+
+  .mc-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: linear-gradient(145deg, #1b1b1b, #222);
+    color: #fff;
+    padding: 20px 25px;
+    border-radius: 14px;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+    width: 300px;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+  }
+
+  .mc-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 30px var(--hover-glow, #00e67655);
+  }
+
+  .mc-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: gray;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+    animation: pulse 2s infinite ease-in-out;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.8; }
+  }
+
+  .mc-online {
+    background: #00e676 !important;
+    box-shadow: 0 0 10px #00e676, 0 0 30px #00e67655;
+  }
+
+  .mc-offline {
+    background: #ff1744 !important;
+    box-shadow: 0 0 10px #ff1744, 0 0 30px #ff174455;
+  }
+
+  .mc-info h3 {
+    margin: 0;
+    font-size: 1.2em;
+    color: #fff;
+  }
+
+  .mc-info p {
+    margin: 3px 0;
+    font-size: 0.9em;
+    color: #bbb;
+  }
+
+  footer {
+    position: absolute;
+    bottom: 15px;
+    font-size: 0.8em;
+    color: #666;
+  }
+</style>
+</head>
+<body>
+<h1>Server Status</h1>
+
+<div id="mc-status-card" class="mc-card">
+  <div class="mc-dot" id="mc-dot"></div>
+  <div class="mc-info">
+    <h3 id="mc-title">devdodger.tech</h3>
+    <p id="mc-status-text">Checking...</p>
+    <p id="mc-players" style="display:none;"></p>
+  </div>
+</div>
+
+<footer>Last updated every 30 seconds</footer>
+
+<script>
+const ip = "devdodger.tech";
+const dot = document.getElementById("mc-dot");
+const text = document.getElementById("mc-status-text");
+const players = document.getElementById("mc-players");
+const title = document.getElementById("mc-title");
+const card = document.getElementById("mc-status-card");
+
+title.textContent = ip;
+
+async function updateStatus() {
+  try {
+    const res = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
+    const data = await res.json();
+
+    if (data.online) {
+      dot.classList.remove("mc-offline");
+      dot.classList.add("mc-online");
+      text.textContent = "🟢 Online";
+      players.style.display = "block";
+      players.textContent = `Players: ${data.players.online}/${data.players.max}`;
+      // Set hover glow for online
+      card.style.setProperty('--hover-glow', '#00e67655');
+    } else {
+      dot.classList.remove("mc-online");
+      dot.classList.add("mc-offline");
+      text.textContent = "🔴 Offline";
+      players.style.display = "none";
+      // Set hover glow for offline
+      card.style.setProperty('--hover-glow', '#ff174455');
+    }
+  } catch (e) {
+    dot.classList.remove("mc-online");
+    dot.classList.add("mc-offline");
+    text.textContent = "⚠️ Error fetching status";
+    players.style.display = "none";
+    card.style.setProperty('--hover-glow', '#ff174455');
+  }
+}
+
+updateStatus();
+setInterval(updateStatus, 30000);
 </script>
 </body>
 </html>
