@@ -70,12 +70,21 @@ body {
     border-radius: 50%;
     opacity: 0.85;
     pointer-events: none;
+    animation: planet-glow 3s ease-in-out infinite;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 .planet-ring {
     position: absolute;
     border-radius: 50%;
     border: 1px solid #ffeb9e66;
     pointer-events: none;
+}
+
+/* Planet glow animation */
+@keyframes planet-glow {
+    0% { box-shadow: 0 0 4px 2px rgba(255,235,158,0.3); }
+    50% { box-shadow: 0 0 12px 6px rgba(255,235,158,0.5); }
+    100% { box-shadow: 0 0 4px 2px rgba(255,235,158,0.3); }
 }
 
 /* Heading */
@@ -148,6 +157,18 @@ h1 {
 }
 .mc-stats p span { font-weight: 600; color: #fff; }
 
+/* Ping bar */
+#ping-bar {
+    display: inline-block;
+    width: 40px;
+    height: 6px;
+    margin-left: 8px;
+    border-radius: 3px;
+    background: #555;
+    vertical-align: middle;
+    transition: width 0.3s, background 0.3s;
+}
+
 /* Footer */
 .mc-footer { font-size: 0.85em; color: #999; margin-top: 6px; text-align: right; }
 </style>
@@ -166,7 +187,7 @@ h1 {
     </div>
   </div>
   <div class="mc-stats" id="mc-stats" style="display:none;">
-    <p id="mc-ping">Ping: <span>...</span></p>
+    <p id="mc-ping">Ping: <span>...</span> <span id="ping-bar"></span></p>
     <p id="mc-version">Version: <span>...</span></p>
     <p id="mc-motd">MOTD: <span>...</span></p>
   </div>
@@ -174,37 +195,32 @@ h1 {
 </div>
 
 <script>
-// Generate random stars
-const stars=[];
+// --- COSMIC BACKGROUND ---
+const stars=[], planets=[];
 for(let i=0;i<100;i++){
     const s=document.createElement('div');
     s.className='star';
     const size=Math.random()*2+1;
     s.style.width=s.style.height=size+'px';
-    const top=Math.random()*window.innerHeight;
-    const left=Math.random()*window.innerWidth;
-    s.style.top=top+'px';
-    s.style.left=left+'px';
-    s.dataset.origX=left;
-    s.dataset.origY=top;
+    s.style.top=Math.random()*window.innerHeight+'px';
+    s.style.left=Math.random()*window.innerWidth+'px';
+    s.dataset.origX=parseFloat(s.style.left);
+    s.dataset.origY=parseFloat(s.style.top);
     document.body.appendChild(s);
     stars.push(s);
 }
 for(let i=0;i<20;i++){
     const s=document.createElement('div');
     s.className='yellow-star';
-    const top=Math.random()*window.innerHeight;
-    const left=Math.random()*window.innerWidth;
-    s.style.top=top+'px';
-    s.style.left=left+'px';
-    s.dataset.origX=left;
-    s.dataset.origY=top;
+    s.style.top=Math.random()*window.innerHeight+'px';
+    s.style.left=Math.random()*window.innerWidth+'px';
+    s.dataset.origX=parseFloat(s.style.left);
+    s.dataset.origY=parseFloat(s.style.top);
     document.body.appendChild(s);
     stars.push(s);
 }
 
-// Generate random planets
-const planets=[];
+// Planets
 function createPlanet(x,y,size,ring=false){
     const p=document.createElement('div');
     p.className='planet';
@@ -229,7 +245,6 @@ function createPlanet(x,y,size,ring=false){
         document.body.appendChild(r);
     }
 }
-// Random planets count
 for(let i=0;i<4;i++){
     createPlanet(Math.random()*window.innerWidth,Math.random()*window.innerHeight,Math.random()*15+5,Math.random()<0.5);
 }
@@ -248,110 +263,107 @@ function createShootingStar(){
     s.style.setProperty('--y-start',startY+'px');
     s.style.setProperty('--x-end',endX+'px');
     s.style.setProperty('--y-end',endY+'px');
-    s.style.animationDuration=(Math.random()*0.8+0.5)+'s';
+    s.style.animationDuration=(Math.random()*0.8+0.4)+'s';
     document.body.appendChild(s);
-    setTimeout(()=>s.remove(),1500);
+    setTimeout(()=>s.remove(),1200);
 }
-setInterval(createShootingStar,300);
+setInterval(createShootingStar,150);
 
-// Smooth parallax
-let mouseX=0, mouseY=0;
-let centerX=window.innerWidth/2, centerY=window.innerHeight/2;
-document.addEventListener('mousemove', e=>{ mouseX=e.clientX-centerX; mouseY=e.clientY-centerY; });
-
-function updateParallax(){
-    const offsetX=mouseX*0.02;
-    const offsetY=mouseY*0.02;
-
+// --- PARALLAX + Planet Glow/Twinkle ---
+document.addEventListener('mousemove',e=>{
+    const cx=e.clientX/window.innerWidth-0.5;
+    const cy=e.clientY/window.innerHeight-0.5;
     stars.forEach(s=>{
-        s.style.left=(parseFloat(s.dataset.origX)+offsetX)+'px';
-        s.style.top=(parseFloat(s.dataset.origY)+offsetY)+'px';
+        const depth=0.3;
+        s.style.left=parseFloat(s.dataset.origX)+cx*50*depth+'px';
+        s.style.top=parseFloat(s.dataset.origY)+cy*50*depth+'px';
     });
-
     planets.forEach(p=>{
-        const ox=parseFloat(p.dataset.origX);
-        const oy=parseFloat(p.dataset.origY);
-        p.style.left=(ox+offsetX*0.1)+'px';
-        p.style.top=(oy+offsetY*0.1)+'px';
+        const depth=0.15;
+        const offsetX=cx*15*depth;
+        const offsetY=cy*15*depth;
+        p.style.left=parseFloat(p.dataset.origX)+offsetX+'px';
+        p.style.top=parseFloat(p.dataset.origY)+offsetY+'px';
+        const glow=4+8*(0.5+0.5*Math.sin(Date.now()/1000));
+        p.style.boxShadow=`0 0 ${glow}px ${glow/2}px rgba(255,235,158,0.5)`;
     });
+});
 
-    document.querySelectorAll('.planet-ring').forEach(r=>{
-        const parent=r.dataset.parent;
-        r.style.left=parseFloat(parent.style.left)-parseFloat(parent.style.width)/2+'px';
-        r.style.top=parseFloat(parent.style.top)+parseFloat(parent.style.height)*0.3+'px';
-    });
-
-    const card=document.getElementById('mc-status-card');
-    card.style.transform=`translate(${offsetX*0.8}px, ${offsetY*0.8}px)`;
-    requestAnimationFrame(updateParallax);
-}
-updateParallax();
-
-// Server status
+// --- SERVER STATUS ---
 const ip="devdodger.tech";
-const dot=document.getElementById("mc-dot");
-const text=document.getElementById("mc-status-text");
-const players=document.getElementById("mc-players");
+const dotEl=document.getElementById("mc-dot");
+const textEl=document.getElementById("mc-status-text");
+const playersEl=document.getElementById("mc-players");
 const statsDiv=document.getElementById("mc-stats");
 const card=document.getElementById("mc-status-card");
 const pingEl=document.getElementById("mc-ping").querySelector("span");
+const pingBar=document.getElementById("ping-bar");
 const versionEl=document.getElementById("mc-version").querySelector("span");
 const motdEl=document.getElementById("mc-motd").querySelector("span");
 const lastUpdatedEl=document.getElementById("mc-last-updated");
 let lastUpdated=new Date();
 
-async function updateStatus(){
+async function fetchServerStatus(){
+    const start=performance.now();
     try{
-        const start=performance.now();
         const res=await fetch(`https://api.mcsrvstat.us/2/${ip}`);
         const end=performance.now();
         const data=await res.json();
         const ping=Math.round(end-start);
 
         if(data.online){
-            dot.classList.remove("mc-offline");
-            dot.classList.add("mc-online");
-            text.textContent="🟢 Online";
-            players.style.display="block";
-            players.textContent=`Players: ${data.players.online||0}/${data.players.max||'?'}`;
-            card.style.setProperty('--hover-glow','#00ff88');
+            dotEl.classList.remove("mc-offline");
+            dotEl.classList.add("mc-online");
+            textEl.textContent="🟢 Online";
+            playersEl.style.display="block";
+            playersEl.textContent=`Players: ${data.players.online||0}/${data.players.max||'?'}`;
             statsDiv.style.display="flex";
-            versionEl.textContent=data.version||"N/A";
+            card.style.setProperty('--hover-glow','#00ff8855');
+
             pingEl.textContent=ping+" ms";
+            let barWidth=Math.min(100,Math.max(20,100-ping/2));
+            pingBar.style.width=barWidth+'px';
+            pingBar.style.background = ping<100?'#00ff88':ping<200?'#ffea00':'#ff2222';
+
+            versionEl.textContent=data.version||"N/A";
             motdEl.textContent="N/A";
         } else {
-            dot.classList.remove("mc-online");
-            dot.classList.add("mc-offline");
-            text.textContent="🔴 Offline";
-            players.style.display="none";
+            dotEl.classList.remove("mc-online");
+            dotEl.classList.add("mc-offline");
+            textEl.textContent="🔴 Offline";
+            playersEl.style.display="none";
             statsDiv.style.display="none";
-            card.style.setProperty('--hover-glow','#ff2222');
+            card.style.setProperty('--hover-glow','#ff222255');
+            pingEl.textContent="N/A";
+            pingBar.style.width="0px";
         }
 
         lastUpdated=new Date();
         updateLastUpdated();
     }catch(e){
-        dot.classList.remove("mc-online");
-        dot.classList.add("mc-offline");
-        text.textContent="⚠️ Error fetching status";
-        players.style.display="none";
+        dotEl.classList.remove("mc-online");
+        dotEl.classList.add("mc-offline");
+        textEl.textContent="⚠️ Error fetching status";
+        playersEl.style.display="none";
         statsDiv.style.display="none";
-        card.style.setProperty('--hover-glow','#ff2222');
+        card.style.setProperty('--hover-glow','#ff222255');
+        pingEl.textContent="N/A";
+        pingBar.style.width="0px";
     }
 }
 
 function updateLastUpdated(){
     const now=new Date();
     const diff=Math.floor((now-lastUpdated)/1000);
-    let text='';
-    if(diff<60) text=`${diff} sec ago`;
-    else if(diff<3600) text=`${Math.floor(diff/60)} min ago`;
-    else text=`${Math.floor(diff/3600)}h ${Math.floor((diff%3600)/60)}m ago`;
-    lastUpdatedEl.textContent=text;
+    let txt='';
+    if(diff<60) txt=`${diff} sec ago`;
+    else if(diff<3600) txt=`${Math.floor(diff/60)} min ago`;
+    else txt=`${Math.floor(diff/3600)}h ${Math.floor((diff%3600)/60)}m ago`;
+    lastUpdatedEl.textContent=txt;
 }
 
-updateStatus();
-setInterval(updateStatus,30000);
+fetchServerStatus();
+setInterval(fetchServerStatus,30000);
 setInterval(updateLastUpdated,1000);
 </script>
 </body>
