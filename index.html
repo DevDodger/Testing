@@ -109,39 +109,42 @@
   <footer>Last updated every 30 seconds</footer>
 
   <script>
-    const ip = "devdodger.tech"; // 👈 change this to your server
-    const dot = document.getElementById("mc-dot");
-    const text = document.getElementById("mc-status-text");
-    const players = document.getElementById("mc-players");
-    const title = document.getElementById("mc-title");
-    title.textContent = ip;
+  const ip = "devdodger.tech"; // 👈 your server address
+  const dot = document.getElementById("mc-dot");
+  const text = document.getElementById("mc-status-text");
+  const players = document.getElementById("mc-players");
+  const title = document.getElementById("mc-title");
+  title.textContent = ip;
 
-    async function updateStatus() {
-      try {
-        const res = await fetch(`https://api.mcsrvstat.us/2/${ip}`);
-        const data = await res.json();
-        if (data.online) {
-          dot.classList.remove("mc-offline");
-          dot.classList.add("mc-online");
-          text.textContent = "🟢 Online";
-          players.style.display = "block";
-          players.textContent = `Players: ${data.players.online}/${data.players.max}`;
-        } else {
-          dot.classList.remove("mc-online");
-          dot.classList.add("mc-offline");
-          text.textContent = "🔴 Offline";
-          players.style.display = "none";
-        }
-      } catch (e) {
+  async function updateStatus() {
+    try {
+      // Use mcstatus.io (real-time, no caching)
+      const res = await fetch(`https://api.mcstatus.io/v2/status/java/${ip}`);
+      const data = await res.json();
+
+      if (data.online) {
+        dot.classList.remove("mc-offline");
+        dot.classList.add("mc-online");
+        text.textContent = "🟢 Online";
+        players.style.display = "block";
+        players.textContent = `Players: ${data.players.online}/${data.players.max}`;
+      } else {
         dot.classList.remove("mc-online");
         dot.classList.add("mc-offline");
-        text.textContent = "⚠️ Error fetching status";
+        text.textContent = "🔴 Offline";
         players.style.display = "none";
       }
+    } catch (e) {
+      dot.classList.remove("mc-online");
+      dot.classList.add("mc-offline");
+      text.textContent = "⚠️ Error fetching status";
+      players.style.display = "none";
     }
+  }
 
-    updateStatus();
-    setInterval(updateStatus, 30000);
-  </script>
+  updateStatus();
+  // Check every 30 seconds (you can lower to 10s if you want)
+  setInterval(updateStatus, 10000);
+</script>
 </body>
 </html>
