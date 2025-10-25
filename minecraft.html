@@ -2,447 +2,221 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
-<title>DevDodger — Server Dashboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DevDodger — Server Dashboard (Live)</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg-1:#05111a;
-  --bg-2:#061827;
-  --glass: rgba(255,255,255,0.03);
-  --muted:#9fb0bd;
-  --accent:#45f0ff;
-  --success:#2dd4bf;
-  --warn:#f59e0b;
-  --danger:#ff6b6b;
+  --bg-1:#05111a; --bg-2:#061827; --glass: rgba(255,255,255,0.03);
+  --muted:#9fb0bd; --accent:#45f0ff; --success:#2dd4bf; --warn:#f59e0b; --danger:#ff6b6b;
   --card-radius:14px;
-  --max-players-visible: 10;
 }
 *{box-sizing:border-box}
 body{
   margin:0; font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
-  background:
-    radial-gradient(800px 420px at 8% 12%, rgba(69,240,255,0.02), transparent 6%),
-    linear-gradient(180deg,var(--bg-1),var(--bg-2));
-  color:#eaf6ff;
-  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-  min-height:100vh;
+  background: radial-gradient(800px 420px at 8% 12%, rgba(69,240,255,0.02), transparent 6%), linear-gradient(180deg,var(--bg-1),var(--bg-2));
+  color:#eaf6ff; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; min-height:100vh;
 }
-
-/* stage */
-.stage {
-  width: min(1200px, 96%);
-  margin: 28px auto;
-  display:grid;
-  grid-template-columns: 1fr 420px;
-  gap:22px;
-  align-items:start;
-  min-height: calc(100vh - 56px);
-  padding-bottom:28px;
-}
-
-/* LEFT column: tiles + main info */
-.left {
-  display:flex; flex-direction:column; gap:16px;
-}
-
-/* tiles grid */
-.tiles {
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap:12px;
-}
-.tile {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border:1px solid rgba(255,255,255,0.03);
-  border-radius:12px;
-  padding:12px;
-  min-height:80px;
-  display:flex; flex-direction:column; justify-content:space-between;
-  box-shadow: 0 14px 40px rgba(2,8,18,0.5);
-  transition: transform .14s ease, box-shadow .14s;
-}
-.tile:hover{ transform: translateY(-6px) }
-.tile .label{ font-size:12px; color:var(--muted); margin:0 }
-.tile .value{ font-size:20px; font-weight:700; color:#e9fbff; margin:6px 0 0 0; word-break:break-word; }
-
-/* big info area to avoid empty space */
-.big-panel {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border:1px solid rgba(255,255,255,0.03);
-  border-radius:12px;
-  padding:14px;
-  box-shadow: 0 14px 40px rgba(2,8,18,0.5);
-  display:flex; gap:12px; align-items:center; justify-content:space-between;
-}
-
-/* RIGHT column: server card + players list */
-.right {
-  display:flex; flex-direction:column; gap:12px;
-}
-
-/* server card */
-.server-card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
-  border-radius:var(--card-radius);
-  padding:16px;
-  border:1px solid rgba(255,255,255,0.04);
-  box-shadow: 0 30px 70px rgba(2,8,18,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
-  backdrop-filter: blur(8px) saturate(120%);
-  position:sticky; top:28px;
-}
-.server-head { display:flex; gap:12px; align-items:center; }
-.status-dot { width:18px; height:18px; border-radius:50%; background:#6f7880; box-shadow:inset 0 -4px 6px rgba(0,0,0,0.6); }
-.status-dot.online { background: linear-gradient(180deg,var(--success), #0bb67a); box-shadow:0 0 14px rgba(45,212,191,0.12); }
-.status-dot.offline { background: linear-gradient(180deg,var(--danger), #ff3b3b); box-shadow:0 0 14px rgba(255,107,107,0.12); }
-
-.server-title { font-size:18px; font-weight:700; color:#e9fbff; margin:0 }
-.server-sub { font-size:12px; color:var(--muted); margin:0 }
-
-.server-grid { display:grid; grid-auto-rows: auto; gap:10px; margin-top:12px; }
-.stat { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:9px; border-radius:10px; background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent); border:1px solid rgba(255,255,255,0.02); }
-.stat .label { color:var(--muted); font-size:13px }
-.stat .value { font-weight:700; color:#eaf6ff }
-
-/* ping meter */
-.ping-meter { display:flex; align-items:center; gap:8px; }
-#ping-bar { width:120px; height:10px; background:#253037; border-radius:999px; overflow:hidden; box-shadow: inset 0 -3px 5px rgba(0,0,0,0.6); }
-#ping-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--success), #10b981); transition: width .25s, background .25s; }
-
-/* copy button */
-.actions { display:flex; gap:10px; margin-top:12px; }
-.btn { padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); color:#dffbff; font-weight:600; cursor:pointer; }
-.btn.copy { background: linear-gradient(90deg, rgba(69,240,255,0.06), rgba(110,245,142,0.02)); color:#001; border:1px solid rgba(69,240,255,0.12); }
-
-/* players list area (scrollable) */
-.players-panel {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border:1px solid rgba(255,255,255,0.03);
-  border-radius:12px;
-  padding:12px;
-  box-shadow: 0 14px 40px rgba(2,8,18,0.45);
-  display:flex; flex-direction:column; gap:8px;
-  min-height:180px; max-height:420px; overflow:auto;
-}
-.players-header { display:flex; justify-content:space-between; align-items:center; }
-.players-list { display:flex; flex-direction:column; gap:8px; margin-top:6px; }
-
-/* each player row */
-.player {
-  display:flex; gap:10px; align-items:center; padding:8px; border-radius:10px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
-  border:1px solid rgba(255,255,255,0.02);
-}
-.avatar { width:44px; height:44px; border-radius:6px; overflow:hidden; background:#111; flex:0 0 44px; }
-.avatar img{ width:100%; height:100%; display:block; object-fit:cover; }
-.pname { font-weight:700; color:#eaf6ff; }
-.pmeta { color:var(--muted); font-size:12px; }
-
-.empty { color:var(--muted); font-size:13px; padding:14px; text-align:center; }
-
-/* footer */
-.footer-small { color:var(--muted); font-size:12px; text-align:right; margin-top:6px; }
-
-/* responsive */
-@media (max-width:1080px){
-  .stage { grid-template-columns: 1fr; gap:16px; padding-bottom:46px; }
-  .server-card { position:relative; top:0; }
-  .tiles { grid-template-columns: repeat(2,1fr) }
-}
-@media (max-width:520px){
-  .tiles { grid-template-columns: 1fr; }
-  .player { min-width:100% }
-}
+.stage { width:min(1200px,96%); margin:28px auto; display:grid; grid-template-columns:1fr 420px; gap:22px; align-items:start; min-height:calc(100vh - 56px); padding-bottom:28px; }
+.left{display:flex;flex-direction:column;gap:16px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tile{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);border-radius:12px;padding:12px;min-height:80px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 14px 40px rgba(2,8,18,0.5);transition:transform .14s ease}
+.tile:hover{transform:translateY(-6px)}
+.tile .label{font-size:12px;color:var(--muted)}
+.tile .value{font-size:20px;font-weight:700;margin-top:4px}
+.big-panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);border-radius:12px;padding:14px;box-shadow:0 14px 40px rgba(2,8,18,0.5);display:flex;justify-content:space-between;align-items:center}
+.right{display:flex;flex-direction:column;gap:12px}
+.server-card{background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015));border-radius:var(--card-radius);padding:16px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 30px 70px rgba(2,8,18,0.6),inset 0 1px 0 rgba(255,255,255,0.02);backdrop-filter:blur(8px) saturate(120%);position:sticky;top:28px}
+.status-dot{width:18px;height:18px;border-radius:50%;background:#6f7880}
+.status-dot.online{background:linear-gradient(180deg,var(--success),#0bb67a)}
+.status-dot.offline{background:linear-gradient(180deg,var(--danger),#ff3b3b)}
+.server-title{font-size:18px;font-weight:700}
+.server-sub{font-size:12px;color:var(--muted)}
+.server-grid{display:grid;gap:10px;margin-top:12px}
+.stat{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.015),transparent);border:1px solid rgba(255,255,255,0.02)}
+.stat .label{color:var(--muted);font-size:13px}
+.stat .value{font-weight:700}
+.ping-meter{display:flex;align-items:center;gap:8px}
+#ping-bar{width:120px;height:10px;background:#253037;border-radius:999px;overflow:hidden}
+#ping-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--success),#10b981);transition:width .25s,background .25s}
+.players-panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);border-radius:12px;padding:12px;box-shadow:0 14px 40px rgba(2,8,18,0.45);display:flex;flex-direction:column;gap:8px;min-height:180px;max-height:420px;overflow:auto}
+.player{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);border:1px solid rgba(255,255,255,0.02)}
+.avatar{width:44px;height:44px;border-radius:6px;overflow:hidden;background:#111}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.pname{font-weight:700}
+.pmeta{color:var(--muted);font-size:12px}
+.empty{color:var(--muted);font-size:13px;padding:14px;text-align:center}
+.footer-small{color:var(--muted);font-size:12px;text-align:right;margin-top:6px}
+@media(max-width:1080px){.stage{grid-template-columns:1fr}.server-card{position:relative;top:0}.tiles{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.tiles{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-
-<main class="stage" id="stage">
-  <!-- LEFT -->
+<main class="stage">
   <section class="left">
-    <div class="tiles" id="tiles">
-      <div class="tile">
-        <div class="label">Server IP</div>
-        <div class="value" id="ipTile">devdodger.tech</div>
-      </div>
-      <div class="tile">
-        <div class="label">Status</div>
-        <div class="value" id="statusTile">Checking…</div>
-      </div>
-      <div class="tile">
-        <div class="label">Players</div>
-        <div class="value" id="playersTile">—</div>
-      </div>
-      <div class="tile">
-        <div class="label">Ping</div>
-        <div class="value" id="pingTile">—</div>
-      </div>
-      <div class="tile">
-        <div class="label">Version</div>
-        <div class="value" id="versionTile">—</div>
-      </div>
-      <div class="tile">
-        <div class="label">Last updated</div>
-        <div class="value" id="lastTile">just now</div>
-      </div>
+    <div class="tiles">
+      <div class="tile"><div class="label">Server IP</div><div class="value" id="ipTile">devdodger.tech</div></div>
+      <div class="tile"><div class="label">Status</div><div class="value" id="statusTile">Checking…</div></div>
+      <div class="tile"><div class="label">Players</div><div class="value" id="playersTile">—</div></div>
+      <div class="tile"><div class="label">Ping</div><div class="value" id="pingTile">—</div></div>
+      <div class="tile"><div class="label">Version</div><div class="value" id="versionTile">—</div></div>
+      <div class="tile"><div class="label">Uptime</div><div class="value" id="uptimeTile">—</div></div>
     </div>
-
-    <div class="big-panel" aria-hidden="false">
-      <div style="display:flex;flex-direction:column;">
-        <div style="font-size:13px;color:var(--muted)">About</div>
-        <div style="font-weight:700;font-size:16px">.....</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:12px;color:var(--muted)">Built by</div>
-        <div style="font-weight:700">DevDodger</div>
-      </div>
+    <div class="big-panel">
+      <div><div style="font-size:13px;color:var(--muted)">About</div><div style="font-weight:700;font-size:16px">......</div></div>
+      <div style="text-align:right"><div style="font-size:12px;color:var(--muted)">Built by</div><div style="font-weight:700">DevDodger</div></div>
     </div>
   </section>
 
-  <!-- RIGHT -->
   <aside class="right">
-    <div class="server-card" id="serverCard" role="region" aria-label="Server details">
-      <div class="server-head">
-        <div id="statusDot" class="status-dot" aria-hidden="true"></div>
+    <div class="server-card">
+      <div class="server-head" style="display:flex;align-items:center;gap:10px;">
+        <div id="statusDot" class="status-dot"></div>
         <div style="flex:1">
           <div class="server-title" id="serverTitle">devdodger.tech</div>
           <div class="server-sub" id="serverSub">Checking server status…</div>
         </div>
       </div>
 
-      <div class="server-grid" role="list" aria-label="server stats">
+      <div class="server-grid">
         <div class="stat"><div class="label">Players</div><div class="value" id="playersVal">—</div></div>
         <div class="stat"><div class="label">Ping</div>
           <div style="display:flex;align-items:center;gap:12px">
             <div id="pingVal">—</div>
-            <div class="ping-meter"><div id="ping-bar"><div id="ping-fill" style="width:0%"></div></div></div>
+            <div class="ping-meter"><div id="ping-bar"><div id="ping-fill"></div></div></div>
           </div>
         </div>
         <div class="stat"><div class="label">Version</div><div class="value" id="versionVal">—</div></div>
-      </div>
-
-      <div class="actions">
-        <button class="btn copy" id="copyBtn">Copy IP</button>
+        <div class="stat"><div class="label">Uptime</div><div class="value" id="uptimeVal">—</div></div>
       </div>
 
       <div class="footer-small" id="lastUpdatedSmall">Last updated: just now</div>
     </div>
 
-    <div class="players-panel" id="playersPanel" aria-live="polite">
-      <div class="players-header">
-        <div style="font-weight:700;color:#eaf6ff">Player List</div>
+    <div class="players-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-weight:700">Player List</div>
         <div class="footer-small" id="playersCount">0 online</div>
       </div>
-      <div class="players-list" id="playersList">
-        <div class="empty" id="noPlayers">No players online</div>
-      </div>
+      <div id="playersList"><div class="empty" id="noPlayers">No players online</div></div>
     </div>
   </aside>
 </main>
 
 <script>
-/* ========== CONFIG ========== */
-const SERVER_IP = 'devdodger.tech';
-const API_URL = `https://api.mcsrvstat.us/2/${SERVER_IP}`;
-const REFRESH_INTERVAL = 10000; // 10s
+const SERVER_IP = "devdodger.tech"; // or "devdodger.tech:25565" if you use a port
+const API_URL = `https://api.mcstatus.io/v2/status/java/${SERVER_IP}`;
+const REFRESH_INTERVAL = 10000;
 
-/* ========== UI refs ========== */
-const ipTile = document.getElementById('ipTile');
-const statusTile = document.getElementById('statusTile');
-const playersTile = document.getElementById('playersTile');
-const pingTile = document.getElementById('pingTile');
-const versionTile = document.getElementById('versionTile');
-const lastTile = document.getElementById('lastTile');
+const ipTile=document.getElementById("ipTile");
+const statusTile=document.getElementById("statusTile");
+const playersTile=document.getElementById("playersTile");
+const pingTile=document.getElementById("pingTile");
+const versionTile=document.getElementById("versionTile");
+const uptimeTile=document.getElementById("uptimeTile");
+const statusDot=document.getElementById("statusDot");
+const serverSub=document.getElementById("serverSub");
+const playersVal=document.getElementById("playersVal");
+const pingVal=document.getElementById("pingVal");
+const pingFill=document.getElementById("ping-fill");
+const versionVal=document.getElementById("versionVal");
+const uptimeVal=document.getElementById("uptimeVal");
+const lastUpdatedSmall=document.getElementById("lastUpdatedSmall");
+const playersList=document.getElementById("playersList");
+const playersCount=document.getElementById("playersCount");
+const noPlayers=document.getElementById("noPlayers");
 
-const statusDot = document.getElementById('statusDot');
-const serverSub = document.getElementById('serverSub');
-const playersVal = document.getElementById('playersVal');
-const pingVal = document.getElementById('pingVal');
-const pingFill = document.getElementById('ping-fill');
-const versionVal = document.getElementById('versionVal');
-const lastUpdatedSmall = document.getElementById('lastUpdatedSmall');
-
-const playersList = document.getElementById('playersList');
-const playersCount = document.getElementById('playersCount');
-const noPlayers = document.getElementById('noPlayers');
-
-const copyBtn = document.getElementById('copyBtn');
-
-ipTile.textContent = SERVER_IP;
-document.getElementById('serverTitle').textContent = SERVER_IP;
-
-/* ========== helpers ========== */
-let lastUpdatedAt = new Date();
-function formatLastUpdateText(diffSec){
-  if(diffSec < 60) return `${diffSec}s ago`;
-  if(diffSec < 3600) return `${Math.floor(diffSec/60)}m ago`;
-  return `${Math.floor(diffSec/3600)}h ${Math.floor((diffSec%3600)/60)}m ago`;
-}
+function avatarURL(name){return `https://minotar.net/avatar/${encodeURIComponent(name)}/64.png`;}
 function setPingMeter(ms){
-  const max = 250;
-  const clamped = Math.min(max, Math.max(0, ms));
-  const pct = Math.round((1 - clamped / max) * 100);
-  const widthPct = Math.max(4, pct);
-  pingFill.style.width = `${widthPct}%`;
-  if(ms < 100) pingFill.style.background = 'linear-gradient(90deg,var(--success), #10b981)';
-  else if(ms < 200) pingFill.style.background = 'linear-gradient(90deg,var(--warn), #f59e0b)';
-  else pingFill.style.background = 'linear-gradient(90deg,var(--danger), #ff6b6b)';
-}
-function avatarURL(name, size=64){ return `https://minotar.net/avatar/${encodeURIComponent(name)}/${size}.png`; }
-
-/* ========== fetch server ========== */
-async function fetchServer(){
-  const start = performance.now();
-  try {
-    const res = await fetch(API_URL);
-    const end = performance.now();
-    const data = await res.json();
-    const measuredPing = Math.max(0, Math.round(end - start));
-    const online = !!data && data.online === true;
-
-    // update last updated timestamps
-    lastUpdatedAt = new Date();
-    lastTile.textContent = 'just now';
-    lastUpdatedSmall.textContent = 'Last updated: just now';
-
-    if(online){
-      const playersOnline = data.players?.online ?? 0;
-      const playersMax = data.players?.max ?? '?';
-      playersTile.textContent = `${playersOnline}/${playersMax}`;
-      playersVal.textContent = `${playersOnline}/${playersMax}`;
-      playersCount.textContent = `${playersOnline} online`;
-
-      const ping = (data.debug && typeof data.debug.ping === 'number') ? data.debug.ping : measuredPing;
-      pingTile.textContent = `${ping} ms`;
-      pingVal.textContent = `${ping} ms`;
-      setPingMeter(ping);
-
-      versionTile.textContent = data.version || 'N/A';
-      versionVal.textContent = data.version || 'N/A';
-
-      // UI: online
-      statusTile.textContent = 'Online';
-      statusDot.classList.remove('offline'); statusDot.classList.add('online');
-      serverSub.textContent = 'Online';
-
-      // render players list
-      renderPlayers(data.players?.list ?? []);
-    } else {
-      // offline UI
-      statusTile.textContent = 'Offline';
-      playersTile.textContent = `0/0`;
-      playersVal.textContent = '—';
-      playersCount.textContent = `0 online`;
-      pingTile.textContent = 'N/A';
-      pingVal.textContent = 'N/A';
-      setPingMeter(999);
-      versionTile.textContent = 'N/A';
-      versionVal.textContent = 'N/A';
-      statusDot.classList.remove('online'); statusDot.classList.add('offline');
-      serverSub.textContent = 'Offline';
-      renderPlayers([]);
-    }
-  } catch(err){
-    console.error('fetch error', err);
-    statusTile.textContent = 'Error';
-    playersTile.textContent = `—`;
-    playersVal.textContent = '—';
-    playersCount.textContent = `0 online`;
-    pingTile.textContent = 'N/A';
-    pingVal.textContent = 'N/A';
-    setPingMeter(999);
-    versionTile.textContent = 'N/A';
-    versionVal.textContent = 'N/A';
-    statusDot.classList.remove('online'); statusDot.classList.add('offline');
-    serverSub.textContent = 'Error';
-    renderPlayers([]);
-    lastUpdatedAt = new Date();
-    lastTile.textContent = 'just now';
-    lastUpdatedSmall.textContent = 'Last updated: just now';
-  }
+  const max=250;const pct=Math.max(4,Math.round((1-Math.min(ms,max)/max)*100));
+  pingFill.style.width=`${pct}%`;
+  pingFill.style.background=ms<100?'linear-gradient(90deg,var(--success),#10b981)':ms<200?'linear-gradient(90deg,var(--warn),#f59e0b)':'linear-gradient(90deg,var(--danger),#ff6b6b)';
 }
 
-/* render players (scrollable) */
 function renderPlayers(list){
-  playersList.innerHTML = '';
-  if(!list || list.length === 0){
-    playersList.appendChild(noPlayers);
-    return;
-  }
-
-  // build rows for each name
-  list.forEach(name => {
-    const row = document.createElement('div');
-    row.className = 'player';
-
-    const av = document.createElement('div'); av.className = 'avatar';
-    const img = document.createElement('img');
-    img.src = avatarURL(name, 64);
-    img.alt = name + ' avatar';
-    img.onload = ()=>{};
-    img.onerror = ()=>{ img.src = fallbackSVG(); }
+  playersList.innerHTML="";
+  if(!list||list.length===0){playersList.appendChild(noPlayers);return;}
+  list.forEach(n=>{
+    const row=document.createElement("div");row.className="player";
+    const av=document.createElement("div");av.className="avatar";
+    const img=document.createElement("img");img.src=avatarURL(n);img.alt=n;
     av.appendChild(img);
-
-    const info = document.createElement('div'); info.style.display='flex'; info.style.flexDirection='column';
-    const nm = document.createElement('div'); nm.className='pname'; nm.textContent = name;
-    const meta = document.createElement('div'); meta.className='pmeta'; meta.textContent = 'Online';
-    info.appendChild(nm); info.appendChild(meta);
-
-    row.appendChild(av); row.appendChild(info);
+    const info=document.createElement("div");
+    const nm=document.createElement("div");nm.className="pname";nm.textContent=n;
+    const meta=document.createElement("div");meta.className="pmeta";meta.textContent="Online";
+    info.appendChild(nm);info.appendChild(meta);
+    row.appendChild(av);row.appendChild(info);
     playersList.appendChild(row);
   });
 }
 
-/* provide small fallback SVG for broken avatars */
-function fallbackSVG(){
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%' height='100%' fill='%230b1220'/><text x='50%' y='55%' font-size='12' fill='%23ffffff' font-family='Arial' text-anchor='middle' alignment-baseline='middle'>?</text></svg>`;
-  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-}
-
-/* last-updated ticker */
-setInterval(() => {
-  const diff = Math.floor((Date.now() - lastUpdatedAt)/1000);
-  const txt = formatLastUpdateText(diff);
-  lastTile.textContent = txt;
-  lastUpdatedSmall.textContent = `Last updated: ${txt}`;
-}, 1000);
-
-/* initial load + polling */
-fetchServer();
-setInterval(fetchServer, REFRESH_INTERVAL);
-
-/* copy ip */
-async function copyIP(){
+async function fetchServer(){
   try{
-    await navigator.clipboard.writeText(SERVER_IP);
-    copyBtn.textContent = 'Copied!';
-    setTimeout(()=> copyBtn.textContent = 'Copy IP', 1800);
+    const start=performance.now();
+    const res=await fetch(API_URL);
+    const end=performance.now();
+    const pingMeasured=Math.round(end-start);
+    const data=await res.json();
+    console.log("Fetched:",data);
+    const online=data.online===true;
+
+    if(online){
+      statusTile.textContent="Online";
+      statusDot.classList.remove("offline");statusDot.classList.add("online");
+      serverSub.textContent="Online";
+
+      const playersOnline=data.players?.online||0;
+      const playersMax=data.players?.max||0;
+      const playerNames=(data.players?.list||[]).map(p=>p.name_clean);
+      const ping=data.latency||pingMeasured;
+      const version=data.version?.name_clean||"N/A";
+
+      playersTile.textContent=`${playersOnline}/${playersMax}`;
+      playersVal.textContent=`${playersOnline}/${playersMax}`;
+      playersCount.textContent=`${playersOnline} online`;
+      pingTile.textContent=`${ping} ms`;
+      pingVal.textContent=`${ping} ms`;
+      versionTile.textContent=version;
+      versionVal.textContent=version;
+      setPingMeter(ping);
+
+      // uptime simulation (since mcstatus.io doesn’t include real uptime)
+      uptimeTile.textContent="Active";
+      uptimeVal.textContent="Active";
+
+      renderPlayers(playerNames);
+    } else {
+      statusTile.textContent="Offline";
+      statusDot.classList.remove("online");statusDot.classList.add("offline");
+      serverSub.textContent="Offline";
+      playersTile.textContent="0/0";
+      playersVal.textContent="—";
+      playersCount.textContent="0 online";
+      pingTile.textContent="N/A";
+      pingVal.textContent="N/A";
+      versionTile.textContent="N/A";
+      versionVal.textContent="N/A";
+      uptimeTile.textContent="—";
+      uptimeVal.textContent="—";
+      setPingMeter(999);
+      renderPlayers([]);
+    }
+    lastUpdatedSmall.textContent="Last updated: just now";
   }catch(e){
-    copyBtn.textContent = 'Copy';
+    console.error("Error fetching server:",e);
+    statusTile.textContent="Error";
+    statusDot.classList.remove("online");statusDot.classList.add("offline");
+    serverSub.textContent="Error";
+    playersTile.textContent="—";playersVal.textContent="—";playersCount.textContent="0 online";
+    pingTile.textContent="N/A";pingVal.textContent="N/A";
+    versionTile.textContent="N/A";versionVal.textContent="N/A";
+    uptimeTile.textContent="—";uptimeVal.textContent="—";
+    setPingMeter(999);
+    renderPlayers([]);
   }
 }
-copyBtn.addEventListener('click', copyIP);
-
-/* keyboard shortcut 'c' to copy */
-window.addEventListener('keydown', (e) => {
-  if(e.key.toLowerCase() === 'c') copyIP();
-});
-
-/* parallax subtle */
-const leftArea = document.querySelector('.left');
-const rightArea = document.querySelector('.right');
-let mx=0,my=0;
-window.addEventListener('mousemove', e => {
-  mx = (e.clientX / window.innerWidth - 0.5);
-  my = (e.clientY / window.innerHeight - 0.5);
-  leftArea.style.transform = `translate3d(${mx*10}px, ${my*6}px, 0)`;
-  rightArea.style.transform = `translate3d(${mx*-6}px, ${my*-4}px, 0)`;
-});
-
-/* handle resize / keep lists tidy */
-window.addEventListener('resize', () => {
-  // no-op for now
-});
+fetchServer();
+setInterval(fetchServer,REFRESH_INTERVAL);
 </script>
 </body>
 </html>
