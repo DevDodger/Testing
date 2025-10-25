@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 - Page Not Found</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+  /* Reset */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0d1117;
+    color: #fff;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .container {
+    text-align: center;
+    max-width: 700px;
+  }
+
+  h1 {
+    font-size: 8rem;
+    color: #ff4c4c;
+    animation: float 3s ease-in-out infinite;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #fff;
+  }
+
+  p {
+    font-size: 1.1rem;
+    color: #aaa;
+    margin-bottom: 2rem;
+  }
+
+  button {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    border: none;
+    background: #1f6feb;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+
+  button:hover {
+    background: #3294ff;
+    transform: scale(1.05);
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+
+  /* Neon floating lines */
+  .line {
+    position: absolute;
+    width: 2px;
+    height: 150px;
+    background: linear-gradient(to bottom, rgba(31,111,235,0), rgba(31,111,235,0.8), rgba(31,111,235,0));
+    left: 50%;
+    transform: translateX(-50%);
+    animation: lineMove 4s linear infinite;
+    opacity: 0.5;
+  }
+
+  @keyframes lineMove {
+    0% { transform: translateX(-50%) translateY(100vh); }
+    100% { transform: translateX(-50%) translateY(-100vh); }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>404</h1>
+  <h2>Page Not Found</h2>
+  <p>Oops! The page you are looking for doesn’t exist or has been moved.</p>
+  <button id="goHome">Return Home</button>
+</div>
+
+<script>
+  document.getElementById('goHome').addEventListener('click', () => {
+    window.location.href = 'index.html'; // go to homepage
+  });
+
+  // Optional: add floating neon lines for style
+  for(let i = 0; i < 8; i++){
+    const line = document.createElement('div');
+    line.className = 'line';
+    line.style.left = `${Math.random()*100}vw`;
+    line.style.height = `${Math.random()*200 + 100}px`;
+    line.style.animationDuration = `${Math.random()*5 + 3}s`;
+    document.body.appendChild(line);
+  }
+</script>
+
+</body>
+</html>
